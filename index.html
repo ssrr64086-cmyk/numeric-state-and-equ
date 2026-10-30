@@ -1,0 +1,729 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>كتاب الرياضيات الحيّ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* ===== Layout concept: a centered "living book" with a ribbon header, one navigable
+   page at a time, and a bottom page-turn bar — all RTL for Arabic learners. ===== */
+:root{
+  --paper:#E7F0F5; --page:#FFFFFF; --page-edge:#F3F8FB;
+  --ink:#15303C; --ink-soft:#52707E; --line:#D9E6EC;
+  --primary:#1C83BD; --primary-deep:#115E86; --primary-soft:#E3F2FA;
+  --amber:#EE9036; --amber-soft:#FCEBD6;
+  --grape:#7A58AF; --grape-soft:#EFE7F8;
+  --correct:#2EA568; --correct-soft:#E0F3E9;
+  --wrong:#D95A51; --wrong-soft:#FBE6E3;
+  --gold:#F3C13A;
+  --font-display:"Baloo Bhaijaan 2","Tajawal",system-ui,sans-serif;
+  --font-body:"Tajawal",system-ui,sans-serif;
+  --r:18px; --r-sm:12px; --r-lg:26px;
+  --shadow:0 18px 40px -22px rgba(17,60,90,.45);
+  --shadow-sm:0 6px 16px -10px rgba(17,60,90,.5);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0C171D; --page:#162831; --page-edge:#11212A;
+  --ink:#E9F3F7; --ink-soft:#9BB3BD; --line:#274049;
+  --primary:#46A8DD; --primary-deep:#9AD6F3; --primary-soft:#123241;
+  --amber:#F2A860; --amber-soft:#3A2a18;
+  --grape:#B89BE6; --grape-soft:#2B2140;
+  --correct:#50C68B; --correct-soft:#12331F;
+  --wrong:#EE7E76; --wrong-soft:#3A1C1A;
+  --gold:#F5CE5A;
+  --shadow:0 18px 44px -20px rgba(0,0,0,.7);
+  --shadow-sm:0 6px 18px -10px rgba(0,0,0,.65);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#0C171D; --page:#162831; --page-edge:#11212A;
+  --ink:#E9F3F7; --ink-soft:#9BB3BD; --line:#274049;
+  --primary:#46A8DD; --primary-deep:#9AD6F3; --primary-soft:#123241;
+  --amber:#F2A860; --amber-soft:#3A2a18;
+  --grape:#B89BE6; --grape-soft:#2B2140;
+  --correct:#50C68B; --correct-soft:#12331F;
+  --wrong:#EE7E76; --wrong-soft:#3A1C1A;
+  --gold:#F5CE5A;
+  --shadow:0 18px 44px -20px rgba(0,0,0,.7);
+  --shadow-sm:0 6px 18px -10px rgba(0,0,0,.65);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--font-body);direction:rtl;line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 15% 0%,rgba(28,131,189,.08),transparent 45%),
+                   radial-gradient(circle at 90% 100%,rgba(238,144,54,.08),transparent 40%);
+}
+.wrap{
+  width:100%;max-width:960px;margin:0 auto;min-height:100%;
+  display:flex;flex-direction:column;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:clamp(10px,3vw,26px);
+}
+
+/* ===== Book frame ===== */
+.book{
+  background:var(--page);border-radius:var(--r-lg);box-shadow:var(--shadow);
+  border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column;
+  flex:1;position:relative;
+}
+.ribbon{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px clamp(14px,3vw,24px);
+  background:linear-gradient(90deg,var(--primary-deep),var(--primary));
+  color:#fff;
+}
+.ribbon .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;letter-spacing:.2px}
+.ribbon .brand .spark{width:26px;height:26px;flex:none}
+.ribbon .meta{font-size:.82rem;opacity:.92;font-weight:500}
+
+/* ===== Page area ===== */
+.stage{position:relative;flex:1;min-height:clamp(430px,62vh,560px)}
+.page{
+  position:absolute;inset:0;padding:clamp(16px,3.2vw,30px);
+  overflow-y:auto;overflow-x:hidden;
+  opacity:0;transform:translateX(-22px);pointer-events:none;
+  transition:opacity .4s ease,transform .4s ease;
+}
+.page.active{opacity:1;transform:none;pointer-events:auto}
+@media (prefers-reduced-motion:reduce){.page{transition:none;transform:none}}
+
+h1,h2,h3{font-family:var(--font-display);line-height:1.3;text-wrap:balance;margin:0}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.8rem;
+  color:var(--primary-deep);background:var(--primary-soft);
+  padding:5px 13px;border-radius:999px;letter-spacing:.3px;
+}
+.lead{color:var(--ink-soft);font-size:1.02rem}
+
+/* ===== Cards ===== */
+.card{background:var(--page-edge);border:1px solid var(--line);border-radius:var(--r);padding:clamp(14px,2.6vw,22px)}
+.def{border-right:5px solid var(--primary);background:var(--primary-soft)}
+.def.grape{border-right-color:var(--grape);background:var(--grape-soft)}
+.note{display:flex;gap:9px;align-items:flex-start;color:var(--ink-soft);font-size:.92rem}
+.note svg{flex:none;margin-top:3px}
+
+/* ===== Tiles & math ===== */
+.tile{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:58px;height:62px;padding:0 10px;border-radius:16px;
+  font-family:var(--font-display);font-weight:700;font-size:1.9rem;
+  background:#fff;color:var(--primary-deep);border:2px solid var(--primary);
+  box-shadow:var(--shadow-sm);
+}
+:root[data-theme="dark"] .tile,
+:root:not([data-theme="light"]) .tile{background:var(--primary-soft)}
+.tile.op{background:var(--amber-soft);color:var(--amber);border-color:var(--amber)}
+.tile.eq{background:var(--grape-soft);color:var(--grape);border-color:var(--grape)}
+.tile.sm{min-width:44px;height:48px;font-size:1.3rem;border-radius:12px}
+.exprow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+
+/* counters */
+.counters{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:4px}
+.dotset{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.dot{width:26px;height:26px;border-radius:50%;background:var(--primary);box-shadow:inset 0 -3px 0 rgba(0,0,0,.12);animation:pop .35s ease both}
+.dot.b{background:var(--amber)}
+.dot.gone{background:transparent;border:2px dashed var(--ink-soft);box-shadow:none;position:relative;opacity:.65}
+.dot.gone::after{content:"";position:absolute;inset:50% -2px auto -2px;height:2px;background:var(--wrong);transform:rotate(-20deg)}
+@keyframes pop{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+.plusmini{font-family:var(--font-display);font-size:1.6rem;color:var(--amber);font-weight:700}
+
+/* ===== Controls ===== */
+.btn{
+  font-family:var(--font-display);font-weight:700;font-size:1rem;cursor:pointer;
+  border:none;border-radius:14px;padding:12px 22px;color:#fff;background:var(--primary);
+  box-shadow:var(--shadow-sm);transition:transform .12s ease,filter .12s ease;
+}
+.btn:hover{filter:brightness(1.05)}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn.ghost{background:transparent;color:var(--primary-deep);border:2px solid var(--primary);box-shadow:none}
+.btn.amber{background:var(--amber)}
+.btn.grape{background:var(--grape)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.stepper{display:inline-flex;align-items:center;gap:0;border:2px solid var(--line);border-radius:14px;overflow:hidden;background:var(--page)}
+.stepper button{border:none;background:var(--page-edge);color:var(--primary-deep);font-size:1.5rem;font-family:var(--font-display);width:46px;height:52px;cursor:pointer}
+.stepper button:hover{background:var(--primary-soft)}
+.stepper .val{min-width:56px;text-align:center;font-family:var(--font-display);font-weight:700;font-size:1.6rem;color:var(--ink)}
+.seg{display:inline-flex;border:2px solid var(--amber);border-radius:14px;overflow:hidden}
+.seg button{border:none;background:var(--page);color:var(--amber);font-family:var(--font-display);font-weight:700;font-size:1.5rem;width:60px;height:52px;cursor:pointer}
+.seg button.on{background:var(--amber);color:#fff}
+.ctrlgrid{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;justify-content:center}
+.ctrlgrid .field{display:flex;flex-direction:column;gap:6px;align-items:center}
+.ctrlgrid .field span{font-size:.85rem;color:var(--ink-soft);font-weight:700}
+
+/* feedback */
+.feedback{min-height:30px;font-weight:700;font-family:var(--font-display);display:flex;align-items:center;gap:8px;justify-content:center}
+.feedback.ok{color:var(--correct)}
+.feedback.no{color:var(--wrong)}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font-weight:700;font-family:var(--font-display);font-size:.9rem}
+.tag.expr{background:var(--primary-soft);color:var(--primary-deep)}
+.tag.sent{background:var(--grape-soft);color:var(--grape)}
+
+/* clue words */
+.cluegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cluecard h3{font-size:1.05rem;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:6px 13px;border-radius:999px;font-weight:700;font-size:.92rem}
+.chip.add{background:var(--primary-soft);color:var(--primary-deep)}
+.chip.sub{background:var(--amber-soft);color:var(--amber)}
+.phrase{font-family:var(--font-display);font-size:1.5rem;text-align:center;font-weight:600}
+.phrase mark{background:var(--gold);color:#3a2b00;padding:2px 10px;border-radius:9px}
+
+/* balance scale */
+.scalewrap{display:flex;flex-direction:column;align-items:center;gap:6px;margin:6px 0}
+.scale{position:relative;width:min(100%,360px);height:184px}
+.beam{position:absolute;top:34px;right:50%;transform-origin:center;transition:transform .7s cubic-bezier(.34,1.3,.5,1)}
+.beam .bar{position:absolute;right:-140px;top:-5px;width:280px;height:10px;border-radius:6px;background:var(--grape)}
+.beam .pivot{position:absolute;right:-9px;top:-9px;width:18px;height:18px;border-radius:50%;background:var(--grape-deep,var(--grape));border:3px solid var(--page)}
+.pan{position:absolute;top:0;width:118px;transition:transform .7s cubic-bezier(.34,1.3,.5,1)}
+.pan .str{width:2px;height:40px;background:var(--ink-soft);margin:0 auto}
+.pan .dish{height:66px;border-radius:0 0 60px 60px/0 0 46px 46px;border:3px solid var(--grape);background:var(--grape-soft);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:1.5rem;color:var(--ink);padding:0 8px;text-align:center}
+.post{position:absolute;right:calc(50% - 7px);top:40px;width:14px;height:120px;background:linear-gradient(var(--grape),var(--line));border-radius:7px}
+.base{position:absolute;right:calc(50% - 55px);bottom:6px;width:110px;height:14px;border-radius:8px;background:var(--grape)}
+.symbuttons{display:flex;gap:12px;justify-content:center}
+.symbtn{width:66px;height:66px;border-radius:18px;border:3px solid var(--grape);background:var(--page);color:var(--grape);font-family:var(--font-display);font-weight:800;font-size:2rem;cursor:pointer;box-shadow:var(--shadow-sm)}
+.symbtn:hover{background:var(--grape-soft)}
+.symbtn.on{background:var(--grape);color:#fff}
+
+/* quiz */
+.q-counter{font-weight:700;color:var(--ink-soft)}
+.q-text{font-family:var(--font-display);font-size:1.35rem;text-align:center;margin:6px 0 4px}
+.opts{display:grid;gap:11px;max-width:460px;margin:0 auto}
+.opt{
+  display:flex;align-items:center;gap:12px;justify-content:center;
+  background:var(--page);border:2px solid var(--line);border-radius:16px;
+  padding:12px;font-family:var(--font-display);font-weight:700;font-size:1.5rem;color:var(--ink);
+  cursor:pointer;transition:border-color .15s,background .15s,transform .1s;
+}
+.opt:hover{border-color:var(--primary)}
+.opt:active{transform:scale(.99)}
+.opt.correct{border-color:var(--correct);background:var(--correct-soft);color:var(--correct)}
+.opt.wrong{border-color:var(--wrong);background:var(--wrong-soft);color:var(--wrong)}
+.opt:disabled{cursor:default}
+.scorebar{display:flex;align-items:center;gap:8px;justify-content:center;font-weight:700;color:var(--ink-soft)}
+.stars{display:flex;gap:6px;justify-content:center;margin:10px 0}
+.stars svg{width:42px;height:42px}
+
+/* learn list */
+.learnlist{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.learnlist li{display:flex;gap:11px;align-items:flex-start;background:var(--page-edge);border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 14px}
+.learnlist .n{flex:none;width:30px;height:30px;border-radius:9px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700}
+.recap{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.recap .card{display:flex;flex-direction:column;gap:6px}
+.recap h3{font-size:1.02rem}
+.recap .ex{font-family:var(--font-display);font-size:1.3rem;color:var(--primary-deep)}
+
+/* hero on cover */
+.cover{display:flex;flex-direction:column;gap:18px;height:100%;justify-content:center;text-align:center;align-items:center}
+.cover h1{font-size:clamp(1.8rem,5.5vw,2.9rem);color:var(--ink)}
+.cover .hero{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin:4px 0}
+.cover .hero .tile{animation:float 3s ease-in-out infinite}
+.cover .hero .tile:nth-child(2){animation-delay:.2s}
+.cover .hero .tile:nth-child(3){animation-delay:.4s}
+.cover .hero .tile:nth-child(4){animation-delay:.6s}
+.cover .hero .tile:nth-child(5){animation-delay:.8s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@media (prefers-reduced-motion:reduce){.cover .hero .tile{animation:none}}
+
+/* ===== Nav bar ===== */
+.navbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:11px clamp(12px,3vw,22px);border-top:1px solid var(--line);background:var(--page-edge);
+}
+.navbar button.nav{
+  display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;
+  background:var(--page);color:var(--primary-deep);border:2px solid var(--line);
+  border-radius:12px;padding:9px 16px;cursor:pointer;font-size:.95rem;
+}
+.navbar button.nav:hover:not(:disabled){border-color:var(--primary);background:var(--primary-soft)}
+.navbar button.nav:disabled{opacity:.4;cursor:not-allowed}
+.dots{display:flex;gap:7px;align-items:center}
+.dots button{width:11px;height:11px;border-radius:50%;border:none;background:var(--line);cursor:pointer;padding:0;transition:transform .15s,background .15s}
+.dots button.on{background:var(--primary);transform:scale(1.35)}
+.pagelabel{font-weight:700;font-size:.85rem;color:var(--ink-soft);text-align:center;min-width:0}
+@media (max-width:540px){
+  .navbar button.nav span.txt{display:none}
+  .navbar button.nav{padding:10px 13px}
+  .cluegrid,.recap{grid-template-columns:1fr}
+  .pagelabel{display:none}
+}
+.navcenter{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+</style>
+
+<div class="wrap">
+  <div class="book">
+    <div class="ribbon">
+      <div class="brand">
+        <svg class="spark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2v6M12 16v6M2 12h6M16 12h6M5 5l4 4M15 15l4 4M19 5l-4 4M9 15l-4 4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <span>كتاب الرياضيات الحيّ</span>
+      </div>
+      <div class="meta">الصف الرابع الابتدائي · المنهج السعودي</div>
+    </div>
+
+    <div class="stage" id="stage">
+
+      <!-- ===== PAGE 0: COVER ===== -->
+      <section class="page" data-label="الغلاف">
+        <div class="cover">
+          <span class="eyebrow">الوحدة · الأنماط والجُمل العددية</span>
+          <h1>تمثيل العبارات والجُمل العددية</h1>
+          <div class="hero">
+            <span class="tile">٦</span>
+            <span class="tile op">+</span>
+            <span class="tile">٣</span>
+            <span class="tile eq">=</span>
+            <span class="tile">٩</span>
+          </div>
+          <p class="lead" style="max-width:34rem">تعلَّمْ كيف نُحوّل الكلمات إلى أعداد وعمليات، ونصنع عباراتٍ وجُملاً عددية — بطريقة تفاعلية تجرّبها بيديك.</p>
+          <ul class="learnlist" style="max-width:34rem;text-align:right;width:100%">
+            <li><span class="n">١</span><div>أُميّز <b>العبارة العددية</b> من <b>الجملة العددية</b>.</div></li>
+            <li><span class="n">٢</span><div>أستعمل <b>الكلمات الدالّة</b> لاختيار العملية المناسبة.</div></li>
+            <li><span class="n">٣</span><div>أُكمل الجملة العددية بالإشارة الصحيحة: <b>=</b> أو <b>&gt;</b> أو <b>&lt;</b>.</div></li>
+          </ul>
+          <button class="btn amber" style="font-size:1.1rem;padding:14px 34px" data-go="1">لِنَبدأ ✦</button>
+        </div>
+      </section>
+
+      <!-- ===== PAGE 1: EXPRESSION BUILDER ===== -->
+      <section class="page" data-label="العبارة العددية">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div><span class="eyebrow">الفكرة الأولى</span></div>
+          <h2 style="font-size:1.6rem">ما العبارة العددية؟</h2>
+          <div class="card def">
+            <b>العبارة العددية</b> هي أعدادٌ ترتبط بينها <b>عملية حسابية</b> (مثل + أو −)،
+            <b>ولا تحتوي على إشارة «يساوي»</b>. مثال: <span class="tile sm">٦</span> <span class="tile sm op">+</span> <span class="tile sm">٣</span>
+          </div>
+
+          <div class="card" style="display:flex;flex-direction:column;gap:16px;align-items:center">
+            <div style="font-weight:700;color:var(--ink-soft)">جرِّب بنفسك: كوِّن عبارتك العددية</div>
+            <div class="ctrlgrid">
+              <div class="field"><span>العدد الأول</span>
+                <div class="stepper"><button data-step="a" data-d="-1" aria-label="إنقاص">−</button><div class="val" id="valA">٦</div><button data-step="a" data-d="1" aria-label="زيادة">+</button></div>
+              </div>
+              <div class="field"><span>العملية</span>
+                <div class="seg"><button id="opPlus" class="on" data-op="+">+</button><button id="opMinus" data-op="−">−</button></div>
+              </div>
+              <div class="field"><span>العدد الثاني</span>
+                <div class="stepper"><button data-step="b" data-d="-1" aria-label="إنقاص">−</button><div class="val" id="valB">٣</div><button data-step="b" data-d="1" aria-label="زيادة">+</button></div>
+              </div>
+            </div>
+
+            <div class="exprow" id="exprOut" style="margin-top:4px"></div>
+            <div class="counters" id="counters"></div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center">
+              <span class="tag expr" id="exprTag">هذه عبارة عددية</span>
+              <button class="btn grape" id="addResult">أضِف الناتج ←</button>
+            </div>
+            <div class="note" id="exprMsg" style="justify-content:center;text-align:center"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PAGE 2: CLUE WORDS ===== -->
+      <section class="page" data-label="الكلمات الدالّة">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div><span class="eyebrow">الفكرة الثانية</span></div>
+          <h2 style="font-size:1.6rem">الكلمات الدالّة تدلّني على العملية</h2>
+          <div class="cluegrid">
+            <div class="card cluecard">
+              <h3><span style="color:var(--primary)">＋</span> كلمات الجمع</h3>
+              <div class="chips">
+                <span class="chip add">مجموع</span><span class="chip add">أكثر من</span><span class="chip add">مزيداً عليه</span>
+                <span class="chip add">معاً</span><span class="chip add">الإجمالي</span><span class="chip add">زاد</span>
+              </div>
+            </div>
+            <div class="card cluecard">
+              <h3><span style="color:var(--amber)">－</span> كلمات الطرح</h3>
+              <div class="chips">
+                <span class="chip sub">الفرق</span><span class="chip sub">أقلّ من</span><span class="chip sub">أنقِص</span>
+                <span class="chip sub">الباقي</span><span class="chip sub">يَنقُص</span><span class="chip sub">كم بقي</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="display:flex;flex-direction:column;gap:14px;align-items:center">
+            <div class="phrase" id="phrase"></div>
+            <div style="color:var(--ink-soft);font-weight:700">ما العملية التي تدلّ عليها الكلمة الملوّنة؟</div>
+            <div style="display:flex;gap:12px">
+              <button class="btn ghost" style="font-size:1.6rem;width:72px" data-clue="+">+</button>
+              <button class="btn ghost" style="font-size:1.6rem;width:72px;border-color:var(--amber);color:var(--amber)" data-clue="−">−</button>
+            </div>
+            <div class="exprow" id="clueOut"></div>
+            <div class="feedback" id="clueFb"></div>
+            <button class="btn" id="clueNext" hidden>العبارة التالية ←</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PAGE 3: NUMBER SENTENCE + BALANCE ===== -->
+      <section class="page" data-label="الجملة العددية">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div><span class="eyebrow">الفكرة الثالثة</span></div>
+          <h2 style="font-size:1.6rem">الجملة العددية والميزان</h2>
+          <div class="card def grape">
+            <b>الجملة العددية</b> تُقارن بين مقدارين بإشارة: <b>«يساوي» =</b> أو <b>«أكبر من» &gt;</b> أو <b>«أصغر من» &lt;</b>.
+            مثال: <span class="tile sm">٦</span><span class="tile sm op">+</span><span class="tile sm">٣</span><span class="tile sm eq">=</span><span class="tile sm">٩</span>
+          </div>
+
+          <div class="card" style="display:flex;flex-direction:column;gap:10px;align-items:center">
+            <div style="font-weight:700;color:var(--ink-soft);text-align:center">اختَرِ الإشارة التي تجعل الميزان صحيحاً</div>
+            <div class="scalewrap">
+              <div class="scale" id="scale">
+                <div class="post"></div>
+                <div class="beam" id="beam">
+                  <div class="bar"></div><div class="pivot"></div>
+                  <div class="pan" id="panRight" style="right:-140px"><div class="str"></div><div class="dish" id="dishRight"></div></div>
+                  <div class="pan" id="panLeft" style="right:22px"><div class="str"></div><div class="dish" id="dishLeft"></div></div>
+                </div>
+                <div class="base"></div>
+              </div>
+            </div>
+            <div class="exprow" id="sentOut"></div>
+            <div class="symbuttons">
+              <button class="symbtn" data-sym="&gt;">&gt;</button>
+              <button class="symbtn" data-sym="=">=</button>
+              <button class="symbtn" data-sym="&lt;">&lt;</button>
+            </div>
+            <div class="feedback" id="sentFb"></div>
+            <button class="btn grape" id="sentNext" hidden>جملة جديدة ←</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PAGE 4: QUIZ ===== -->
+      <section class="page" data-label="تدريبات">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <span class="eyebrow">هيّا نتدرّب</span>
+            <span class="q-counter" id="qCounter"></span>
+          </div>
+          <div id="quizBody" style="display:flex;flex-direction:column;gap:14px"></div>
+        </div>
+      </section>
+
+      <!-- ===== PAGE 5: SUMMARY ===== -->
+      <section class="page" data-label="الخلاصة">
+        <div style="display:flex;flex-direction:column;gap:16px;text-align:center;align-items:center">
+          <span class="eyebrow">أحسنت! أكملتَ الدرس</span>
+          <h2 style="font-size:1.7rem">ماذا تعلّمنا؟</h2>
+          <div class="recap" style="text-align:right;width:100%">
+            <div class="card def">
+              <h3>العبارة العددية</h3>
+              <div>أعداد وعمليات بلا إشارة يساوي.</div>
+              <div class="ex">٨ + ٥</div>
+            </div>
+            <div class="card def grape">
+              <h3>الجملة العددية</h3>
+              <div>تُقارن بإشارة = أو &gt; أو &lt;.</div>
+              <div class="ex">٨ + ٥ = ١٣</div>
+            </div>
+            <div class="card">
+              <h3 style="color:var(--primary-deep)">كلمات الجمع</h3>
+              <div>مجموع · أكثر · مزيداً عليه · معاً</div>
+            </div>
+            <div class="card">
+              <h3 style="color:var(--amber)">كلمات الطرح</h3>
+              <div>الفرق · أقلّ · أنقِص · الباقي</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+            <button class="btn amber" data-go="4">أعِد التدريبات</button>
+            <button class="btn ghost" data-go="0">العودة إلى البداية ↻</button>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /stage -->
+
+    <!-- ===== NAV BAR ===== -->
+    <div class="navbar">
+      <button class="nav" id="prevBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="txt">السابق</span>
+      </button>
+      <div class="navcenter">
+        <div class="dots" id="dots"></div>
+        <div class="pagelabel" id="pageLabel"></div>
+      </div>
+      <button class="nav" id="nextBtn">
+        <span class="txt">التالي</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.documentElement.setAttribute('dir','rtl');
+document.documentElement.setAttribute('lang','ar');
+
+/* ---------- helpers ---------- */
+var AR='٠١٢٣٤٥٦٧٨٩';
+function ar(n){return String(n).replace(/[0-9]/g,function(d){return AR[+d];});}
+function tile(txt,cls){return '<span class="tile sm '+(cls||'')+'">'+txt+'</span>';}
+function $(s,r){return (r||document).querySelector(s);}
+function $all(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+
+/* ---------- page navigation ---------- */
+var pages=$all('.page');
+var total=pages.length;
+var cur=0;
+var dotsBox=$('#dots'), pageLabel=$('#pageLabel');
+pages.forEach(function(p,i){
+  var b=document.createElement('button');
+  b.setAttribute('aria-label','صفحة '+ar(i+1));
+  b.addEventListener('click',function(){go(i);});
+  dotsBox.appendChild(b);
+});
+var dotEls=$all('button',dotsBox);
+
+function go(i){
+  if(i<0||i>=total)return;
+  cur=i;
+  pages.forEach(function(p,k){p.classList.toggle('active',k===i);});
+  dotEls.forEach(function(d,k){d.classList.toggle('on',k===i);});
+  pageLabel.textContent='صفحة '+ar(i+1)+' من '+ar(total)+' · '+pages[i].dataset.label;
+  $('#prevBtn').disabled=(i===0);
+  $('#nextBtn').disabled=(i===total-1);
+  var st=$('#stage'); if(st) st.scrollTop=0;
+  pages[i].scrollTop=0;
+}
+$('#prevBtn').addEventListener('click',function(){go(cur-1);});
+$('#nextBtn').addEventListener('click',function(){go(cur+1);});
+$all('[data-go]').forEach(function(b){b.addEventListener('click',function(){go(+b.dataset.go);});});
+document.addEventListener('keydown',function(e){
+  if(e.target.tagName==='INPUT')return;
+  if(e.key==='ArrowLeft')go(cur+1);      /* RTL: left = forward */
+  if(e.key==='ArrowRight')go(cur-1);
+});
+
+/* ---------- PAGE 1: expression builder ---------- */
+var B={a:6,b:3,op:'+'};
+function dots(n,cls,gone){
+  var h='<div class="dotset">';
+  for(var i=0;i<n;i++){h+='<div class="dot '+(cls||'')+(gone&&i>=gone?' gone':'')+'" style="animation-delay:'+(i*0.04)+'s"></div>';}
+  return h+'</div>';
+}
+function renderBuilder(){
+  $('#valA').textContent=ar(B.a);
+  $('#valB').textContent=ar(B.b);
+  $('#exprOut').innerHTML=tile(ar(B.a))+tile(B.op,'op')+tile(ar(B.b));
+  /* counters */
+  var c='';
+  if(B.op==='+'){
+    c=dots(B.a,'')+'<span class="plusmini">+</span>'+dots(B.b,'b');
+  }else{
+    /* subtraction: show a dots, cross out b of them */
+    c=dots(B.a,'',Math.max(0,B.a-Math.min(B.a,B.b)));
+  }
+  $('#counters').innerHTML=c;
+  /* reset result */
+  $('#exprTag').textContent='هذه عبارة عددية';
+  $('#exprTag').className='tag expr';
+  $('#exprMsg').innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>لاحِظ: لا توجد إشارة «يساوي» — لذلك هي عبارة، وليست جملة.</span>';
+  var btn=$('#addResult'); btn.disabled=false; btn.textContent='أضِف الناتج ←';
+}
+$all('[data-step]').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var k=btn.dataset.step, d=+btn.dataset.d;
+    B[k]=Math.min(9,Math.max(1,B[k]+d));
+    renderBuilder();
+  });
+});
+$all('.seg [data-op]').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    B.op=btn.dataset.op;
+    $('#opPlus').classList.toggle('on',B.op==='+');
+    $('#opMinus').classList.toggle('on',B.op==='−');
+    renderBuilder();
+  });
+});
+$('#addResult').addEventListener('click',function(){
+  var res = B.op==='+' ? B.a+B.b : B.a-B.b;
+  if(B.op==='−' && B.b>B.a){
+    $('#exprMsg').innerHTML='<span style="color:var(--amber)">اجعل العدد الأول أكبر من الثاني لإيجاد الناتج في الطرح 🙂</span>';
+    return;
+  }
+  $('#exprOut').innerHTML=tile(ar(B.a))+tile(B.op,'op')+tile(ar(B.b))+tile('=','eq')+tile(ar(res));
+  $('#exprTag').textContent='الآن أصبحت جملة عددية!';
+  $('#exprTag').className='tag sent';
+  $('#exprMsg').innerHTML='<span style="color:var(--grape)">حين أضفنا الناتج والإشارة «=» تحوّلت العبارة إلى <b>جملة عددية</b>.</span>';
+  this.disabled=true;
+});
+renderBuilder();
+
+/* ---------- PAGE 2: clue words ---------- */
+var PHRASES=[
+  {t:'مجموعُ ٨ و ٥', mark:'مجموع', op:'+', a:8, b:5},
+  {t:'الفرقُ بين ٩ و ٤', mark:'الفرق', op:'−', a:9, b:4},
+  {t:'٧ مزيداً عليه ٦', mark:'مزيداً عليه', op:'+', a:7, b:6},
+  {t:'أنقِصْ ٣ من ١٥', mark:'أنقِص', op:'−', a:15, b:3},
+  {t:'١٠ و ٨ معاً', mark:'معاً', op:'+', a:10, b:8},
+  {t:'الباقي من ٢٠ بعد إنفاق ٧', mark:'الباقي', op:'−', a:20, b:7}
+];
+var ci=0, clueAnswered=false;
+function renderPhrase(){
+  clueAnswered=false;
+  var p=PHRASES[ci];
+  $('#phrase').innerHTML=p.t.replace(p.mark,'<mark>'+p.mark+'</mark>');
+  $('#clueOut').innerHTML='';
+  var fb=$('#clueFb'); fb.className='feedback'; fb.textContent='';
+  $('#clueNext').hidden=true;
+  $all('[data-clue]').forEach(function(b){b.disabled=false;b.style.opacity='1';});
+}
+$all('[data-clue]').forEach(function(b){
+  b.addEventListener('click',function(){
+    if(clueAnswered)return;
+    var p=PHRASES[ci], fb=$('#clueFb');
+    if(b.dataset.clue===p.op){
+      clueAnswered=true;
+      $('#clueOut').innerHTML=tile(ar(p.a))+tile(p.op,'op')+tile(ar(p.b));
+      fb.className='feedback ok';
+      fb.innerHTML='✓ أحسنت! الكلمة «'+p.mark+'» تدلّ على '+(p.op==='+'?'الجمع':'الطرح');
+      $('#clueNext').hidden=(ci>=PHRASES.length-1);
+      if(ci>=PHRASES.length-1){
+        fb.innerHTML+=' — أكملتَ كل العبارات! 🎉';
+      }
+      $all('[data-clue]').forEach(function(x){x.disabled=true;x.style.opacity='.6';});
+    }else{
+      fb.className='feedback no';
+      fb.innerHTML='حاوِل مرّة أخرى — انظر إلى الكلمة الملوّنة.';
+    }
+  });
+});
+$('#clueNext').addEventListener('click',function(){
+  if(ci<PHRASES.length-1){ci++;renderPhrase();}
+});
+renderPhrase();
+
+/* ---------- PAGE 3: balance / number sentence ---------- */
+var S={a:5,b:3,r:8};
+var sentAnswered=false;
+function correctSym(){
+  var l=S.a+S.b;
+  return l===S.r?'=':(l>S.r?'>':'<');
+}
+function renderSentence(tilt){
+  $('#sentOut').innerHTML=tile(ar(S.a))+tile('+','op')+tile(ar(S.b))+tile('؟','eq')+tile(ar(S.r));
+  $('#dishRight').innerHTML=ar(S.a)+' + '+ar(S.b);   /* expression pan (right) */
+  $('#dishLeft').textContent=ar(S.r);                /* number pan (left) */
+  var fb=$('#sentFb'); fb.className='feedback'; fb.textContent='';
+  $('#sentNext').hidden=true;
+  $all('.symbtn').forEach(function(x){x.classList.remove('on');x.disabled=false;});
+  setBeam(0);
+}
+function setBeam(deg){
+  $('#beam').style.transform='rotate('+deg+'deg)';
+  /* keep dishes upright */
+  $('#panRight').style.transform='rotate('+(-deg)+'deg)';
+  $('#panLeft').style.transform='rotate('+(-deg)+'deg)';
+}
+$all('.symbtn').forEach(function(b){
+  b.addEventListener('click',function(){
+    if(sentAnswered)return;
+    var chosen=b.textContent.trim();
+    var right=correctSym();
+    var l=S.a+S.b;
+    /* tilt: right pan (expression) heavier -> positive deg (right down) */
+    var diff=l-S.r;
+    var deg=Math.max(-13,Math.min(13,diff*4));
+    setBeam(deg);
+    var fb=$('#sentFb');
+    if(chosen===right){
+      sentAnswered=true;
+      b.classList.add('on');
+      fb.className='feedback ok';
+      var word = right==='='?'متساويان، فالميزان متّزن':(right==='>'?'الطرف الأيمن أكبر':'الطرف الأيمن أصغر');
+      fb.innerHTML='✓ صحيح! '+ar(l)+' '+right+' '+ar(S.r)+' — '+word+'.';
+      $('#sentOut').innerHTML=tile(ar(S.a))+tile('+','op')+tile(ar(S.b))+tile(right,'eq')+tile(ar(S.r));
+      $all('.symbtn').forEach(function(x){x.disabled=true;});
+      $('#sentNext').hidden=false;
+    }else{
+      fb.className='feedback no';
+      fb.innerHTML='ليست هي — انظر أيّ الطرفين أثقل في الميزان، ثم حاوِل.';
+    }
+  });
+});
+$('#sentNext').addEventListener('click',function(){
+  sentAnswered=false;
+  var a=1+Math.floor(Math.random()*8), b=1+Math.floor(Math.random()*8);
+  var s=a+b, mode=Math.floor(Math.random()*3), r;
+  if(mode===0)r=s;
+  else if(mode===1)r=Math.max(1,s-(1+Math.floor(Math.random()*3)));
+  else r=s+(1+Math.floor(Math.random()*3));
+  S={a:a,b:b,r:r};
+  renderSentence();
+});
+renderSentence();
+
+/* ---------- PAGE 4: quiz ---------- */
+var QUIZ=[
+  {q:'أيٌّ ممّا يلي <b>عبارة عددية</b>؟', opts:['٦ + ٣','٦ + ٣ = ٩','٨ = ٨'], c:0, why:'العبارة العددية لا تحتوي على إشارة يساوي.'},
+  {q:'أيٌّ ممّا يلي <b>جملة عددية</b>؟', opts:['٧ − ٢','٧ − ٢ = ٥','٧ − ٢ + ١'], c:1, why:'الجملة العددية تحتوي على إشارة «يساوي».'},
+  {q:'ما العبارة التي تمثّل: «مجموع ٧ و ٦»؟', opts:['٧ − ٦','٧ + ٦','٧ = ٦'], c:1, why:'كلمة «مجموع» تدلّ على الجمع.'},
+  {q:'ما العبارة التي تمثّل: «الفرق بين ١٥ و ٨»؟', opts:['١٥ + ٨','١٥ − ٨','٨ + ١٥'], c:1, why:'كلمة «الفرق» تدلّ على الطرح.'},
+  {q:'ضع الإشارة الصحيحة: ٤ + ٥ ◻ ٩', opts:['=','&gt;','&lt;'], c:0, why:'٤ + ٥ = ٩، والطرفان متساويان.'},
+  {q:'ضع الإشارة الصحيحة: ٣ + ٢ ◻ ٨', opts:['=','&gt;','&lt;'], c:2, why:'٣ + ٢ = ٥، و٥ أصغر من ٨.'}
+];
+var qi=0, score=0;
+function renderQuiz(){
+  if(qi>=QUIZ.length){return quizDone();}
+  var it=QUIZ[qi];
+  $('#qCounter').textContent='سؤال '+ar(qi+1)+' من '+ar(QUIZ.length)+' · نقاطك: '+ar(score);
+  var html='<div class="q-text">'+it.q+'</div><div class="opts">';
+  it.opts.forEach(function(o,k){html+='<button class="opt" data-k="'+k+'">'+o+'</button>';});
+  html+='</div><div class="feedback" id="qFb"></div>';
+  $('#quizBody').innerHTML=html;
+  $all('#quizBody .opt').forEach(function(btn){
+    btn.addEventListener('click',function(){answer(+btn.dataset.k,btn);});
+  });
+}
+function answer(k,btn){
+  var it=QUIZ[qi];
+  $all('#quizBody .opt').forEach(function(b){b.disabled=true;});
+  var fb=$('#qFb');
+  if(k===it.c){
+    score++;
+    btn.classList.add('correct');
+    fb.className='feedback ok';fb.innerHTML='✓ إجابة صحيحة! '+it.why;
+  }else{
+    btn.classList.add('wrong');
+    $all('#quizBody .opt')[it.c].classList.add('correct');
+    fb.className='feedback no';fb.innerHTML='الصحيح مُميَّز بالأخضر. '+it.why;
+  }
+  $('#qCounter').textContent='سؤال '+ar(qi+1)+' من '+ar(QUIZ.length)+' · نقاطك: '+ar(score);
+  var nb=document.createElement('button');
+  nb.className='btn';nb.style.margin='6px auto 0';nb.style.display='block';
+  nb.textContent=(qi<QUIZ.length-1)?'السؤال التالي ←':'النتيجة ←';
+  nb.addEventListener('click',function(){qi++;renderQuiz();});
+  $('#quizBody').appendChild(nb);
+}
+function star(fill){return '<svg viewBox="0 0 24 24" fill="'+(fill?'var(--gold)':'none')+'" stroke="var(--gold)" stroke-width="1.6"><path d="M12 2.5l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 21.8 6.2 20.9l1.1-6.5L2.6 9.3l6.5-.9z" stroke-linejoin="round"/></svg>';}
+function quizDone(){
+  var pct=score/QUIZ.length;
+  var st=pct>=0.84?3:(pct>=0.5?2:1);
+  $('#qCounter').textContent='';
+  var msg=st===3?'ممتاز! أتقنتَ الدرس 🎉':(st===2?'جيّد جداً! راجِع ما فاتك.':'بداية طيّبة — أعِد المحاولة لتتقن أكثر.');
+  $('#quizBody').innerHTML=
+    '<div style="text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center">'+
+    '<h2 style="font-size:1.6rem">أكملتَ التدريبات!</h2>'+
+    '<div class="stars">'+star(st>=1)+star(st>=2)+star(st>=3)+'</div>'+
+    '<div class="scorebar" style="font-size:1.2rem;color:var(--ink)">نتيجتك: <b>'+ar(score)+' / '+ar(QUIZ.length)+'</b></div>'+
+    '<div class="lead">'+msg+'</div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">'+
+      '<button class="btn amber" id="qRetry">أعِد المحاولة ↻</button>'+
+      '<button class="btn ghost" id="qNext">الخلاصة ←</button>'+
+    '</div></div>';
+  $('#qRetry').addEventListener('click',function(){qi=0;score=0;renderQuiz();});
+  $('#qNext').addEventListener('click',function(){go(5);});
+}
+renderQuiz();
+
+/* init */
+go(0);
+</script>
+
+</body></html>
